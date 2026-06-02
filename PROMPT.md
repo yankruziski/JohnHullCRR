@@ -169,7 +169,7 @@ Layout, de cima para baixo:
 │  CAMINHOS QUE PERFORMARAM (apenas in-the-money)                            │
 │  cenário | S_T | K | payoff | Cu | Cd                                      │
 ├──────────────────────────────────────────────────────────────────────────┤
-│  ★ VALOR DA OPÇÃO JUSTA HOJE:  R$ X,XX                                     │
+│  VALOR DA OPÇÃO JUSTA HOJE:  R$ X,XX                                       │
 └──────────────────────────────────────────────────────────────────────────┘
 ```
 

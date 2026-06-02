@@ -6,7 +6,7 @@ Um simulador **interativo e visual** de preço justo de opções (Call e Put) us
 
 ---
 
-## 🚀 Início rápido
+## Início rápido
 
 ### Pré-requisitos
 
@@ -48,7 +48,7 @@ Acesse **`http://localhost:5000`** em qualquer navegador moderno (Chrome, Firefo
 
 ---
 
-## 📖 Como usar a interface
+## Como usar a interface
 
 ### Barra de controle (topo)
 
@@ -66,11 +66,11 @@ Acesse **`http://localhost:5000`** em qualquer navegador moderno (Chrome, Firefo
 | **K (STRIKE)** | Preço de exercício. Pré-preenchido com S₀ (ATM = at-the-money). Você pode editar. | S₀ |
 | **r (SELIC)** | Taxa livre de risco anual (SELIC). Em decimais (ex: `0.105` = 10,5% a.a.) | 0.105 |
 
-**Depois de preencher, clique `▶ CALCULAR` ou pressione ENTER.**
+**Depois de preencher, clique `CALCULAR` ou pressione ENTER.**
 
 ---
 
-## 📊 Visualizações e resultados
+## Visualizações e resultados
 
 A interface mostra 7 seções após o cálculo:
 
@@ -147,12 +147,12 @@ CENÁRIO | S_T      | K       | PAYOFF  | Cu      | Cd
 - **PAYOFF** = lucro/perda da opção (Call: max(S_T − K, 0); Put: max(K − S_T, 0)).
 - **Cu, Cd** = valores intermediários que alimentam a indução retroativa.
 
-### 6. **Valor da opção justa hoje** ⭐
+### 6. **Valor da opção justa hoje**
 
 O resultado final em destaque:
 
 ```
-★ VALOR DA OPÇÃO JUSTA HOJE (CALL)
+VALOR DA OPÇÃO JUSTA HOJE (CALL)
 R$ 6,11
 VALE3 — CALL — K R$ 81.70 — 3 meses — σ 28.94%
 ```
@@ -161,7 +161,7 @@ Esse é o **prêmio justo** que a opção deveria custar hoje (segundo o modelo 
 
 ---
 
-## 🧮 O modelo matemático (explicado)
+## O modelo matemático (explicado)
 
 ### O que é o modelo CRR?
 
@@ -172,7 +172,7 @@ O **modelo binomial CRR** assume que, a cada período (no nosso caso, 1 mês):
 
 ### Os 5 passos
 
-#### 1️⃣ **Forward pass: construir a árvore de preços**
+#### 1. **Forward pass: construir a árvore de preços**
 
 Começamos com S₀ (hoje) e multiplicamos por u ou d em cada passo:
 
@@ -190,7 +190,7 @@ onde:
 |-------|-------|-------|-------|
 | 81.7  | 88.8 / 75.1 | 96.6 / 81.7 / 69.1 | 105.0 / 88.8 / 73.4 / 63.6 |
 
-#### 2️⃣ **Calcular o payoff no vencimento (última coluna)**
+#### 2. **Calcular o payoff no vencimento (última coluna)**
 
 No final do horizonte (mês n), a opção vale seu valor intrínseco:
 
@@ -205,7 +205,7 @@ Se S(n,j) > K, a opção vale a diferença; senão, vale 0.
 C(n, j) = max(K − S(n, j), 0)
 ```
 
-#### 3️⃣ **Backward induction: descontar para hoje**
+#### 3. **Backward induction: descontar para hoje**
 
 Começamos no final da árvore e voltamos passo a passo:
 
@@ -215,7 +215,7 @@ C(i, j) = e^(−r·Δt) × [ p × C(i+1, j+1) + (1−p) × C(i+1, j) ]
 
 **Em português:** o valor da opção em um nó é a expectativa ponderada (probabilidade p) dos dois filhos, descontada por um período.
 
-#### 4️⃣ **O valor justo é C(0, 0)**
+#### 4. **O valor justo é C(0, 0)**
 
 Quando chegamos na raiz (hoje), temos o prêmio justo.
 
@@ -232,7 +232,7 @@ Quando chegamos na raiz (hoje), temos o prêmio justo.
 
 ---
 
-## 💡 Exemplo prático: VALE3 Call 3 meses
+## Exemplo prático: VALE3 Call 3 meses
 
 **Cenário:** 2 de junho de 2026
 
@@ -249,7 +249,7 @@ Dados do mercado:
   σ = 28.94% a.a. (calculada dos últimos 3 meses)
   
 Resultado:
-  ★ Prêmio justo = R$ 6,11
+  Prêmio justo = R$ 6,11
 
 Interpretação:
   Se você comprasse essa opção Call hoje, deveria pagar ~R$ 6,11.
@@ -259,7 +259,7 @@ Interpretação:
 
 ---
 
-## 🔧 Estrutura do projeto
+## Estrutura do projeto
 
 ```
 JohnHullCRR/
@@ -319,7 +319,7 @@ JohnHullCRR/
 
 ---
 
-## 🧪 Testes
+## Testes
 
 ```bash
 # Teste rápido do modelo CRR
@@ -334,7 +334,7 @@ python backend/crr.py
 
 ---
 
-## 📚 Referências
+## Referências
 
 - **John Hull** (2023). *Options, Futures, and Other Derivatives* (12ª ed.).
   - Capítulo 13: "The Binomial Model"
@@ -345,7 +345,7 @@ python backend/crr.py
 
 ---
 
-## ❓ FAQ
+## FAQ
 
 ### P: Por que a minha opção Call não está in-the-money em todos os cenários?
 **R:** Uma opção só tem valor se terminar acima do strike (para Call) ou abaixo (para Put). Se em um caminho a ação cai, o payoff é zero — a opção "vira pó".
@@ -368,7 +368,7 @@ python backend/crr.py
 
 ---
 
-## 🤝 Contribuições
+## Contribuições
 
 Sugestões e melhorias são bem-vindas! Abra uma issue ou PR no GitHub.
 
