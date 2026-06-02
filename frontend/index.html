@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CRR Options Pricer — John Hull</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ── Header ──────────────────────────────────────────────────────────── -->
+  <header class="bb-header">
+    <span class="bb-title">SISTEMA DE PRECIFICAÇÃO DE OPÇÕES — CRR / JOHN HULL</span>
+    <span class="bb-clock" id="clock"></span>
+  </header>
+
+  <!-- ── Controls ────────────────────────────────────────────────────────── -->
+  <section class="bb-controls">
+    <div class="ctrl-group">
+      <label class="ctrl-label">ATIVO</label>
+      <div class="autocomplete-wrapper">
+        <input id="tickerInput" class="bb-input" type="text" placeholder="ex: VALE3 ou Vale" autocomplete="off" />
+        <ul id="tickerDropdown" class="dropdown" hidden></ul>
+      </div>
+    </div>
+
+    <div class="ctrl-group">
+      <label class="ctrl-label">n (MESES)</label>
+      <input id="nInput" class="bb-input narrow" type="number" value="3" min="1" max="36" />
+    </div>
+
+    <div class="ctrl-group">
+      <label class="ctrl-label">TIPO</label>
+      <div class="toggle-group">
+        <button id="btnCall" class="toggle-btn active" data-tipo="call">CALL</button>
+        <button id="btnPut"  class="toggle-btn"        data-tipo="put">PUT</button>
+      </div>
+    </div>
+
+    <div class="ctrl-group">
+      <label class="ctrl-label">STRIKE (K)</label>
+      <input id="kInput" class="bb-input narrow" type="number" step="0.01" placeholder="ATM" />
+    </div>
+
+    <div class="ctrl-group">
+      <label class="ctrl-label">SELIC a.a.</label>
+      <input id="rInput" class="bb-input narrow" type="number" step="0.001" value="0.105" />
+    </div>
+
+    <button id="calcBtn" class="bb-btn">&#9654; CALCULAR</button>
+  </section>
+
+  <!-- ── Loading / Error ─────────────────────────────────────────────────── -->
+  <div id="loadingBar" class="loading-bar hidden">CARREGANDO DADOS...</div>
+  <div id="errorBar"   class="error-bar   hidden"></div>
+
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <main id="results" class="hidden">
+
+    <!-- ── Asset name + chart ────────────────────────────────────────────── -->
+    <section class="bb-section">
+      <div class="section-header">
+        <span id="assetName">—</span>
+        <span class="section-header-right">
+          <span class="label-dim">S₀ =</span>
+          <span id="s0Display" class="val-highlight">—</span>
+        </span>
+      </div>
+      <div class="chart-container">
+        <canvas id="priceChart"></canvas>
+      </div>
+    </section>
+
+    <!-- ── Metrics ───────────────────────────────────────────────────────── -->
+    <section class="bb-section">
+      <div class="section-header">MÉTRICAS DA AÇÃO NO PERÍODO</div>
+      <div class="metrics-grid">
+        <div class="metric-cell">
+          <span class="metric-label">VOL σ (a.a.)</span>
+          <span class="metric-value" id="mVol">—</span>
+        </div>
+        <div class="metric-cell">
+          <span class="metric-label">MÉDIA</span>
+          <span class="metric-value" id="mMean">—</span>
+        </div>
+        <div class="metric-cell">
+          <span class="metric-label">MEDIANA</span>
+          <span class="metric-value" id="mMedian">—</span>
+        </div>
+        <div class="metric-cell">
+          <span class="metric-label">VAR (log-ret)</span>
+          <span class="metric-value" id="mVar">—</span>
+        </div>
+        <div class="metric-cell">
+          <span class="metric-label">RETORNO B&H</span>
+          <span class="metric-value signed" id="mBah">—</span>
+        </div>
+        <div class="metric-cell">
+          <span class="metric-label">MAX DRAWDOWN</span>
+          <span class="metric-value neg" id="mDD">—</span>
+        </div>
+        <div class="metric-cell">
+          <span class="metric-label">MENOR PREÇO</span>
+          <span class="metric-value" id="mMin">—</span>
+        </div>
+        <div class="metric-cell">
+          <span class="metric-label">MAIOR PREÇO</span>
+          <span class="metric-value" id="mMax">—</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Model params ──────────────────────────────────────────────────── -->
+    <section class="bb-section">
+      <div class="section-header">PARÂMETROS DO MODELO CRR</div>
+      <div class="params-row" id="modelParams">—</div>
+    </section>
+
+    <!-- ── Binomial tree ─────────────────────────────────────────────────── -->
+    <section class="bb-section">
+      <div class="section-header">ÁRVORE BINOMIAL — <span id="treeLabel">—</span></div>
+      <div class="tree-scroll">
+        <svg id="treeSvg"></svg>
+      </div>
+    </section>
+
+    <!-- ── Performing paths table ────────────────────────────────────────── -->
+    <section class="bb-section" id="pathsSection">
+      <div class="section-header">CAMINHOS QUE PERFORMARAM (in-the-money)</div>
+      <div class="table-scroll">
+        <table class="bb-table" id="pathsTable">
+          <thead>
+            <tr>
+              <th>CENÁRIO</th>
+              <th>S<sub>T</sub></th>
+              <th>K</th>
+              <th>PAYOFF</th>
+              <th>C<sub>u</sub></th>
+              <th>C<sub>d</sub></th>
+            </tr>
+          </thead>
+          <tbody id="pathsBody"></tbody>
+        </table>
+      </div>
+      <div id="noPaths" class="no-paths hidden">Nenhum caminho in-the-money neste cenário.</div>
+    </section>
+
+    <!-- ── Option price ──────────────────────────────────────────────────── -->
+    <section class="bb-section result-section">
+      <div class="result-label">★ VALOR DA OPÇÃO JUSTA HOJE (<span id="tipoDisplay">CALL</span>)</div>
+      <div class="result-price" id="optionPrice">—</div>
+      <div class="result-sub" id="resultSub">—</div>
+    </section>
+
+  </main>
+
+  <!-- ── Scripts ─────────────────────────────────────────────────────────── -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
